@@ -257,7 +257,7 @@ async function sendRequest() {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
     try {
-        const response = await fetch("https://threed-n2m.onrender.com", {
+        const response = await fetch("https://threed-n2m.onrender.com/ask", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
