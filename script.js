@@ -12,9 +12,9 @@ let currentChatId = null;
 let chats = {};
 
 // Ranglar va Dizayn Konstantalari
-const COLOR_CYAN = '#cf0505';
+const COLOR_CYAN = '#00f2ff';
 const COLOR_DEEP_BLUE = '#0033ff';
-const COLOR_LINK = '#ffffff'; // Yorqin moviy neon
+const COLOR_LINK = '#1a2a4a';
 const COLOR_HIGHLIGHT = '#ffffff';
 
 // 1. 3D Grafika obyektini yaratish
@@ -24,10 +24,6 @@ const Graph = ForceGraph3D({
     .backgroundColor('rgba(0,0,0,0)')
     .showNavInfo(false)
     .forceEngine('d3')
-    // --- YANGI QO'SHILADIGAN QISM ---
-    .d3Force('link', d3.forceLink().distance(150)) // Liniyalar uzunligini 150 birimga o'rnatadi
-    .d3Force('charge', d3.forceManyBody().strength(-300)) // Tugunlarni bir-biridan itaradi
-    // -------------------------------
     .cooldownTime(3000)
 
     // TUGUN USTIGA SICHQONCHA KELGANDA (HOVER)
@@ -70,7 +66,7 @@ const Graph = ForceGraph3D({
 // Grafikni global oynaga ulash
 window.Graph = Graph;
 
-// 2. Render funksiyasi (Yozuvlar va masofani sozlash)
+// 2. Render funksiyasi (Kublar, Matnlar va Neon Halqa)
 function renderGraph() {
     if (allNodes.length === 0) return;
 
@@ -79,57 +75,52 @@ function renderGraph() {
         links: allLinks.map(link => ({ ...link }))
     });
 
-    // MASOFANI SOZLASH (Liniyalarni uzaytirish)
-    Graph.d3Force('link').distance(300); // 150 dan 200 ga oshirdik, yozuvlar yopishmasligi uchun
-    Graph.d3Force('charge').strength(-400); // Tugunlarni kuchliroq itarish
-
     Graph.nodeThreeObject(node => {
-        // SpriteText mavjudligini tekshirish
-        const SpriteTextClass = window.SpriteText || (typeof SpriteText !== 'undefined' ? SpriteText : null);
-        
-        if (SpriteTextClass) {
-            const sprite = new SpriteTextClass(node.label || node.id);
-            const isHighlight = node.id === 'root' || node.isRoot;
-            
-            sprite.color = node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN);
-            sprite.textHeight = 8; 
-            sprite.fontWeight = 'bold';
-            
-            // Yozuv fonini shaffof qilish (yozuvlar o'qilishi oson bo'ladi)
-            sprite.padding = 2;
-            
-            return sprite;
-        }
-        return false; 
+        const SpriteTextClass = window.SpriteText || SpriteText;
+        const sprite = new SpriteTextClass(node.label || node.id);
+        sprite.color = '#ffffff';
+        sprite.textHeight = 1.5;
+
+        const isHighlight = node.id === 'root' || node.isRoot;
+
+        // ASOSIY KUB
+        const geometry = new THREE.BoxGeometry(8, 8, 8);
+        const material = new THREE.MeshStandardMaterial({
+            color: node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN),
+            roughness: 0.1,
+            metalness: 0.8,
+            emissive: node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN),
+            emissiveIntensity: 0.4
+        });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.rotation.set(Math.PI/4, Math.PI/4, 0);
+
+        // NEON HALQA (Halo Effect)
+        const haloGeo = new THREE.SphereGeometry(10, 16, 16);
+        const haloMat = new THREE.MeshBasicMaterial({
+            color: node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN),
+            transparent: true,
+            opacity: 0.15,
+            wireframe: true
+        });
+        const halo = new THREE.Mesh(haloGeo, haloMat);
+
+        const group = new THREE.Group();
+        group.add(cube);
+        group.add(halo);
+        sprite.position.y = 14;
+        group.add(sprite);
+
+        return group;
     });
 
     // Bog'lanishlar dizayni
     Graph.linkColor(() => COLOR_LINK)
-         .linkOpacity(0.6)
-         .linkWidth(1.5)
+         .linkOpacity(0.4)
+         .linkWidth(1)
          .linkDirectionalParticles(2)
-         .linkDirectionalParticleSpeed(0.005);
-}
-    
-    // Agar SpriteText bo'lmasa, oddiy sharchalar chizsin (grafik to'xtab qolmasligi uchun)
-    return false; 
-});
-
-        // Rang tanlash
-        sprite.color = node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN);
-        sprite.textHeight = 6; // Matn o'lchamini oshirdik chunki shakl yo'q
-        sprite.fontWeight = 'bold';
-
-        return sprite;
-    });
-
-    // Bog'lanishlar dizayni (yorqinroq va ko'rinarliroq)
-    Graph.linkColor(() => COLOR_LINK)
-         .linkOpacity(0.8)  // Shaffoflikni oshirdik (0.4 dan 0.8 ga)
-         .linkWidth(1)      // Qalinligini oshirdik (1 dan 2 ga)
-         .linkDirectionalParticles(1)  // Zarralar sonini oshirdik
-         .linkDirectionalParticleWidth(1)  // Zarralar o'lchamini oshirdik
-         .linkDirectionalParticleSpeed(0.01);  // Tezlikni oshirdik
+         .linkDirectionalParticleWidth(2)
+         .linkDirectionalParticleSpeed(0.007);
 }
 
 // 3. Tugun bosilganda bog'lanishlarni ajratib ko'rsatish
@@ -137,29 +128,29 @@ function highlightNodeEffects(selectedNode) {
     Graph.linkDirectionalParticleSpeed(link => {
         const s = (typeof link.source === 'object') ? link.source.id : link.source;
         const t = (typeof link.target === 'object') ? link.target.id : link.target;
-        return (s === selectedNode.id || t === selectedNode.id) ? 0.05 : 0.01;
+        return (s === selectedNode.id || t === selectedNode.id) ? 0.04 : 0.007;
     });
 
     Graph.linkWidth(link => {
         const s = (typeof link.source === 'object') ? link.source.id : link.source;
         const t = (typeof link.target === 'object') ? link.target.id : link.target;
-        return (s === selectedNode.id || t === selectedNode.id) ? 4 : 2;
+        return (s === selectedNode.id || t === selectedNode.id) ? 3 : 1;
     });
 
     setTimeout(() => {
-        Graph.linkDirectionalParticleSpeed(0.01);
-        Graph.linkWidth(2);
+        Graph.linkDirectionalParticleSpeed(0.007);
+        Graph.linkWidth(1);
     }, 3000);
 }
 
 // 4. Ma'lumotlarni aqlli birlashtirish (Smart Merging)
 function addNewData(newData) {
-    console.log("AI dan kelgan grafik ma'lumotlari:", newData); // Konsolda tekshirish uchun
-    
-    if (!newData || !Array.isArray(newData.nodes)) {
-        console.error("Noto'g'ri grafik formati keldi");
-        return;
-    }
+    if (!newData || !newData.nodes) return;
+
+    const labelToIdMap = {};
+    allNodes.forEach(n => {
+        labelToIdMap[n.label.toLowerCase()] = n.id;
+    });
     const idMapping = {};
 
     newData.nodes.forEach(newNode => {
@@ -204,74 +195,7 @@ function addNewData(newData) {
     renderGraph();
 }
 
-// 5. QIDIRUV FUNKSIYASI
-function searchNode(query) {
-    if (!query || query.trim() === '') {
-        // Agar qidiruv bo'sh bo'lsa, barcha tugunlarni ko'rsatish
-        allNodes.forEach(n => n.hidden = false);
-        renderGraph();
-        return;
-    }
-
-    const searchTerm = query.toLowerCase().trim();
-    let foundNode = null;
-
-    allNodes.forEach(node => {
-        const labelMatch = (node.label || '').toLowerCase().includes(searchTerm);
-        const summaryMatch = (node.summary || '').toLowerCase().includes(searchTerm);
-
-        if (labelMatch || summaryMatch) {
-            node.hidden = false;
-            if (!foundNode) foundNode = node;
-        } else {
-            node.hidden = false; // Barcha tugunlarni ko'rsatamiz
-        }
-    });
-
-    renderGraph();
-
-    // Agar topilgan tugun bo'lsa, unga kamera bilan fokuslanish
-    if (foundNode) {
-        const distance = 120;
-        const distRatio = 1 + distance / Math.hypot(foundNode.x, foundNode.y, foundNode.z);
-
-        Graph.cameraPosition(
-            {
-                x: foundNode.x * distRatio,
-                y: foundNode.y * distRatio,
-                z: foundNode.z * distRatio
-            },
-            foundNode,
-            1500
-        );
-
-        highlightNodeEffects(foundNode);
-
-        // Qidiruv natijasini ko'rsatish
-        const searchResult = document.getElementById('search-result');
-        if (searchResult) {
-            searchResult.textContent = `✓ Topildi: ${foundNode.label}`;
-            searchResult.style.color = '#39ff14';
-            setTimeout(() => {
-                searchResult.textContent = '';
-            }, 3000);
-        }
-    } else {
-        const searchResult = document.getElementById('search-result');
-        if (searchResult) {
-            searchResult.textContent = '✗ Natija topilmadi';
-            searchResult.style.color = '#ca0505';
-            setTimeout(() => {
-                searchResult.textContent = '';
-            }, 3000);
-        }
-    }
-}
-
-// Global qidiruv funksiyasini expose qilish
-window.searchNode = searchNode;
-
-// 6. API bilan ishlash
+// 5. API bilan ishlash
 async function sendRequest() {
     const inputField = document.getElementById("userInput");
     const input = inputField.value.trim();
@@ -320,7 +244,7 @@ async function sendRequest() {
     }
 }
 
-// 7. Chatlarni boshqarish
+// 6. Chatlarni boshqarish
 function createNewChat() {
     const id = "chat_" + Date.now();
     chats[id] = {
@@ -364,7 +288,7 @@ function updateSidebar() {
     });
 }
 
-// 8. Tooltip pozitsiyasini boshqarish
+// 7. Tooltip pozitsiyasini boshqarish
 window.addEventListener('mousemove', (e) => {
     if (tooltip && tooltip.style.display === 'block') {
         tooltip.style.left = (e.pageX + 20) + 'px';
@@ -372,7 +296,7 @@ window.addEventListener('mousemove', (e) => {
     }
 });
 
-// 9. XSS himoyasi
+// 8. XSS himoyasi
 function escapeHtml(text) {
     const map = {
         '&': '&amp;',
@@ -384,5 +308,5 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// 10. Sahifa yuklanganda birinchi chatni yaratish
+// 9. Sahifa yuklanganda birinchi chatni yaratish
 window.onload = createNewChat;
