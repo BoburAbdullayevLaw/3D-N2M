@@ -448,14 +448,22 @@
     <div id="main-wrapper">
         <button id="burger-btn" onclick="toggleSidebar()">☰</button>
 
-        <div id="sidebar">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--cyber-cyan); margin: 0; font-size: 18px; letter-spacing: 1px;">3D N2M</h3>
-                <span class="close-btn-x" onclick="toggleSidebar()">&times;</span>
-            </div>
-            <button class="new-chat-btn" onclick="createNewChat()">+ Yangi Mavzu</button>
-            <div id="chat-list"></div>
-        </div>
+        <button class="new-chat-btn" onclick="createNewChat()">+ Yangi Mavzu</button>
+
+<button onclick="window.location.href='spheres.html'" 
+        style="background: linear-gradient(135deg, #0033ff, #00d2ff); 
+               color: white; 
+               border: none; 
+               padding: 12px; 
+               border-radius: 8px; 
+               font-weight: bold; 
+               cursor: pointer; 
+               margin: 10px 0; 
+               width: 100%;
+               display: block;
+               box-shadow: 0 4px 15px rgba(0, 51, 255, 0.3);">
+    🔵 Sharchali Dizayn
+</button>
 
         <div id="chat-container">
             <div id="messages"></div>
