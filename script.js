@@ -24,6 +24,10 @@ const Graph = ForceGraph3D({
     .backgroundColor('rgba(0,0,0,0)')
     .showNavInfo(false)
     .forceEngine('d3')
+    // --- YANGI QO'SHILADIGAN QISM ---
+    .d3Force('link', d3.forceLink().distance(150)) // Liniyalar uzunligini 150 birimga o'rnatadi
+    .d3Force('charge', d3.forceManyBody().strength(-300)) // Tugunlarni bir-biridan itaradi
+    // -------------------------------
     .cooldownTime(3000)
 
     // TUGUN USTIGA SICHQONCHA KELGANDA (HOVER)
