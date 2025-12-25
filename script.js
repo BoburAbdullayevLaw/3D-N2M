@@ -70,7 +70,7 @@ const Graph = ForceGraph3D({
 // Grafikni global oynaga ulash
 window.Graph = Graph;
 
-// 2. Render funksiyasi (FAQAT YOZUV/LABEL)
+// 2. Render funksiyasi (Yozuvlar va masofani sozlash)
 function renderGraph() {
     if (allNodes.length === 0) return;
 
@@ -79,18 +79,37 @@ function renderGraph() {
         links: allLinks.map(link => ({ ...link }))
     });
 
+    // MASOFANI SOZLASH (Liniyalarni uzaytirish)
+    Graph.d3Force('link').distance(300); // 150 dan 200 ga oshirdik, yozuvlar yopishmasligi uchun
+    Graph.d3Force('charge').strength(-400); // Tugunlarni kuchliroq itarish
+
     Graph.nodeThreeObject(node => {
-    // SpriteText mavjudligini tekshirish
-    const SpriteTextClass = window.SpriteText || (typeof SpriteText !== 'undefined' ? SpriteText : null);
-    
-    if (SpriteTextClass) {
-        const sprite = new SpriteTextClass(node.label || node.id);
-        const isHighlight = node.id === 'root' || node.isRoot;
-        sprite.color = node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN);
-        sprite.textHeight = 8; // Biroq kattaroq qildik
-        sprite.fontWeight = 'bold';
-        return sprite;
-    }
+        // SpriteText mavjudligini tekshirish
+        const SpriteTextClass = window.SpriteText || (typeof SpriteText !== 'undefined' ? SpriteText : null);
+        
+        if (SpriteTextClass) {
+            const sprite = new SpriteTextClass(node.label || node.id);
+            const isHighlight = node.id === 'root' || node.isRoot;
+            
+            sprite.color = node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN);
+            sprite.textHeight = 8; 
+            sprite.fontWeight = 'bold';
+            
+            // Yozuv fonini shaffof qilish (yozuvlar o'qilishi oson bo'ladi)
+            sprite.padding = 2;
+            
+            return sprite;
+        }
+        return false; 
+    });
+
+    // Bog'lanishlar dizayni
+    Graph.linkColor(() => COLOR_LINK)
+         .linkOpacity(0.6)
+         .linkWidth(1.5)
+         .linkDirectionalParticles(2)
+         .linkDirectionalParticleSpeed(0.005);
+}
     
     // Agar SpriteText bo'lmasa, oddiy sharchalar chizsin (grafik to'xtab qolmasligi uchun)
     return false; 
