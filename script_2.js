@@ -9,7 +9,7 @@ const MindMapEngine = {
         treeDistance: 80,       // Qavatlar (level) orasidagi masofa
         treeRepulsion: -800,    // Mind Mapda tugunlarning bir-biridan qochish kuchi (kuchliroq)
         networkRepulsion: -200, // Neyron xaritada erkin suzish kuchi
-        linkDistance: 50,       // Bog'lanishlar uzunligi
+        linkDistance: 45,       // Bog'lanishlar uzunligi
         transitionTime: 1500    // Kamera va simulyatsiya o'tish vaqti
     },
 
@@ -25,7 +25,7 @@ const MindMapEngine = {
             .dagMode('td')
             .dagLevelDistance(this.settings.treeDistance)
             .linkCurvature(0.3) // Bog'lanishlarni egri qilish (vizual chiroyli ko'rinadi)
-            .linkDirectionalArrowLength(6) // Yo'nalish ko'rsatkichlari (strelka) kattaroq
+            .linkDirectionalArrowLength(4) // Yo'nalish ko'rsatkichlari (strelka)
             .linkDirectionalArrowRelPos(1); // Strelkani chiziq oxiriga qo'yish
 
         // 2. Kuchlarni daraxt strukturasiga moslash
