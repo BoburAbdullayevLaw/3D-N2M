@@ -76,10 +76,21 @@ function renderGraph() {
     });
 
     Graph.nodeThreeObject(node => {
-        const SpriteTextClass = window.SpriteText || SpriteText;
+    // SpriteText mavjudligini tekshirish
+    const SpriteTextClass = window.SpriteText || (typeof SpriteText !== 'undefined' ? SpriteText : null);
+    
+    if (SpriteTextClass) {
         const sprite = new SpriteTextClass(node.label || node.id);
-
         const isHighlight = node.id === 'root' || node.isRoot;
+        sprite.color = node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN);
+        sprite.textHeight = 8; // Biroq kattaroq qildik
+        sprite.fontWeight = 'bold';
+        return sprite;
+    }
+    
+    // Agar SpriteText bo'lmasa, oddiy sharchalar chizsin (grafik to'xtab qolmasligi uchun)
+    return false; 
+});
 
         // Rang tanlash
         sprite.color = node.color || (isHighlight ? COLOR_DEEP_BLUE : COLOR_CYAN);
@@ -120,12 +131,12 @@ function highlightNodeEffects(selectedNode) {
 
 // 4. Ma'lumotlarni aqlli birlashtirish (Smart Merging)
 function addNewData(newData) {
-    if (!newData || !newData.nodes) return;
-
-    const labelToIdMap = {};
-    allNodes.forEach(n => {
-        labelToIdMap[n.label.toLowerCase()] = n.id;
-    });
+    console.log("AI dan kelgan grafik ma'lumotlari:", newData); // Konsolda tekshirish uchun
+    
+    if (!newData || !Array.isArray(newData.nodes)) {
+        console.error("Noto'g'ri grafik formati keldi");
+        return;
+    }
     const idMapping = {};
 
     newData.nodes.forEach(newNode => {
